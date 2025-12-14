@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รายการสินค้าทั้งหมด | Product App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================= */
+        /* CSS Theme */
+        /* ============================= */
+        :root {
+            --primary-color: #4CAF50;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* ส่วนหัวและเมนู */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            margin: 0 10px;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* ช่องค้นหา */
+        .search-wrapper {
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 1px solid #ddd;
+            border-radius: 30px; /* ขอบมนรี */
+            font-family: 'Kanit', sans-serif;
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Grid แสดงสินค้า */
+        .product-grid {
+            display: grid;
+            /* จัดคอลัมน์อัตโนมัติ (ต่ำสุด 200px) */
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        /* การ์ดสินค้าแต่ละใบ */
+        .product-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover; /* ตัดภาพให้พอดีกรอบ */
+            background-color: #eee;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .product-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-code {
+            font-size: 12px;
+            color: #888;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 5px;
+            width: fit-content;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 18px;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* สถานะ Loading / ไม่พบข้อมูล */
+        .status-msg {
+            text-align: center;
+            grid-column: 1 / -1; /* กินพื้นที่เต็มแถว */
+            color: #666;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>📦 รายการสินค้าทั้งหมด</h1>
+            <div class="nav-links">
+                <a href="/">➕ เพิ่มสินค้า</a> |
+                <a href="/search">🔍 ค้นหาด้วยรหัส</a> |
+                <a href="/del">❌ ลบสินค้า</a>
+            </div>
+        </header>
+
+        <div class="search-wrapper">
+            <input type="text" 
+                   id="searchInput" 
+                   placeholder="🔍 พิมพ์ชื่อ หรือ รหัสสินค้า เพื่อกรอง...">
+        </div>
+
+        <div id="productList" class="product-grid">
+            <div class="status-msg">⏳ กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+        const productListEl = document.getElementById("productList");
+        const searchInput = document.getElementById("searchInput");
+
+        // -----------------------------
+        // โหลดสินค้าทั้งหมด
+        // -----------------------------
+        async function loadProducts() {
+            try {
+                const response = await fetch("/api/products");
+                if(!response.ok) throw new Error("Load failed");
+                
+                products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                productListEl.innerHTML = `<div class="status-msg" style="color:red;">ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้</div>`;
+            }
+        }
+
+        // -----------------------------
+        // แสดงผล (Render)
+        // -----------------------------
+        function renderProducts(list) {
+            productListEl.innerHTML = "";
+
+            if (list.length === 0) {
+                productListEl.innerHTML = `<div class="status-msg">❌ ไม่พบสินค้า</div>`;
+                return;
+            }
+
+            list.forEach(p => {
+                // เช็คว่ามีรูปไหม ถ้าไม่มีใช้รูป placeholder
+                const imgHtml = p.image_url 
+                    ? `<img src="${p.image_url}" class="product-img" loading="lazy">`
+                    : `<div class="product-img" style="display:flex;align-items:center;justify-content:center;color:#999;">ไม่มีรูปภาพ</div>`;
+
+                const html = `
+                    <div class="product-card">
+                        ${imgHtml}
+                        <div class="product-info">
+                            <div>
+                                <span class="product-code">${p.product_code}</span>
+                                <div class="product-name">${p.name}</div>
+                            </div>
+                            <div class="product-price">${parseFloat(p.price).toLocaleString()} บาท</div>
+                        </div>
+                    </div>
+                `;
+                productListEl.innerHTML += html;
+            });
+        }
+
+        // -----------------------------
+        // กรองข้อมูล (Filter)
+        // -----------------------------
+        searchInput.addEventListener("input", function () {
+            const keyword = searchInput.value.toLowerCase().trim();
+
+            const filtered = products.filter(p => 
+                p.product_code.toLowerCase().includes(keyword) ||
+                p.name.toLowerCase().includes(keyword)
+            );
+
+            renderProducts(filtered);
+        });
+
+        // เริ่มทำงาน
+        loadProducts();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เพิ่มสินค้า | Product App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ============================= */
+        /* CSS ตกแต่งความสวยงาม */
+        /* ============================= */
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* กรอบคอนเทนเนอร์หลัก (Card) */
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px; /* จำกัดความกว้างไม่ให้กว้างเกินไป */
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 20px 0;
+        }
+
+        /* เมนูนำทาง */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #555;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* ฟอร์ม */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            margin-top: 15px;
+            display: block;
+        }
+
+        /* ปรับแต่ง Input */
+        input[type="text"],
+        input[type="number"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            box-sizing: border-box; /* ให้ padding ไม่ดันความกว้าง */
+            font-family: 'Kanit', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+        }
+
+        /* ปุ่มบันทึก */
+        button[type="submit"] {
+            margin-top: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-family: 'Kanit', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button[type="submit"]:active {
+            transform: scale(0.98);
+        }
+
+        /* ข้อความแจ้งเตือน */
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 600;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>เพิ่มสินค้าใหม่</h1>
+        <p class="subtitle">กรอกข้อมูลสินค้าและรูปภาพ จากนั้นกดบันทึก</p>
+
+        <hr>
+
+        <nav>
+            <a href="/search">🔍 ค้นหา</a>
+            <a href="/view">📋 รายการทั้งหมด</a>
+            <a href="/del">❌ ลบสินค้า</a>
+        </nav>
+
+        <hr>
+
+        <form id="productForm" enctype="multipart/form-data">
+
+            <label for="product_code">รหัสสินค้า</label>
+            <input type="text"
+                   id="product_code"
+                   name="product_code"
+                   placeholder="เช่น P001"
+                   required>
+
+            <label for="name">ชื่อสินค้า</label>
+            <input type="text"
+                   id="name"
+                   name="name"
+                   placeholder="เช่น กล้อง USB"
+                   required>
+
+            <label for="price">ราคา</label>
+            <input type="number"
+                   id="price"
+                   name="price"
+                   step="0.01"
+                   placeholder="เช่น 1200"
+                   required>
+
+            <label for="image">รูปสินค้า</label>
+            <input type="file"
+                   id="image"
+                   name="image"
+                   accept="image/*">
+
+            <button type="submit">💾 บันทึกสินค้า</button>
+        </form>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById("productForm");
+        const messageEl = document.getElementById("message");
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+
+            // เปลี่ยนข้อความระหว่างรอ
+            const btn = form.querySelector('button');
+            const originalBtnText = btn.textContent;
+            btn.textContent = "⏳ กำลังบันทึก...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch("/api/products", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    messageEl.style.color = "#dc3545"; // สีแดง
+                    messageEl.textContent = data.error || "เกิดข้อผิดพลาด";
+                } else {
+                    messageEl.style.color = "#28a745"; // สีเขียว
+                    messageEl.textContent = "✅ บันทึกสินค้าสำเร็จเรียบร้อย";
+                    form.reset();
+                }
+
+            } catch (error) {
+                messageEl.style.color = "#dc3545";
+                messageEl.textContent = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+            } finally {
+                // คืนค่าปุ่มกลับสู่สภาพเดิม
+                btn.textContent = originalBtnText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

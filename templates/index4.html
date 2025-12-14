@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ลบสินค้า | Product App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================= */
+        /* CSS Theme */
+        /* ============================= */
+        :root {
+            --danger-color: #dc3545; /* สีแดงสำหรับปุ่มลบ */
+            --danger-hover: #c82333;
+            --primary-color: #4CAF50; /* สีเขียวสำหรับลิงก์ */
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .icon-header {
+            font-size: 50px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        h1 {
+            color: var(--danger-color);
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 20px 0;
+        }
+
+        /* เมนูนำทาง */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #555;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* ฟอร์มและปุ่ม */
+        label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--danger-color); /* เมื่อโฟกัสจะเป็นสีแดง */
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.2);
+        }
+
+        button {
+            margin-top: 25px;
+            background-color: var(--danger-color);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-family: 'Kanit', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+        }
+
+        button:hover {
+            background-color: var(--danger-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* ข้อความแจ้งเตือน */
+        #del_message {
+            margin-top: 20px;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <span class="icon-header">🗑️</span>
+        <h1>ลบสินค้า</h1>
+        <p class="subtitle">ระวัง! การลบสินค้าจะไม่สามารถกู้คืนได้</p>
+
+        <hr>
+
+        <nav>
+            <a href="/">➕ เพิ่มสินค้า</a>
+            <a href="/search">🔍 ค้นหา</a>
+            <a href="/index3">📋 รายการทั้งหมด</a>
+        </nav>
+
+        <hr>
+
+        <div style="text-align: left;">
+            <label for="del_code">รหัสสินค้าที่ต้องการลบ</label>
+            <input type="text" id="del_code" placeholder="ระบุรหัสสินค้า (เช่น P001)">
+        </div>
+
+        <button onclick="confirmDelete()">ยืนยันการลบสินค้า</button>
+
+        <p id="del_message"></p>
+    </div>
+
+    <script>
+        async function confirmDelete() {
+            const codeInput = document.getElementById("del_code");
+            const code = codeInput.value.trim();
+            const messageEl = document.getElementById("del_message");
+
+            // รีเซ็ตข้อความ
+            messageEl.textContent = "";
+
+            // 1. ตรวจสอบว่ากรอกรหัสหรือยัง
+            if (!code) {
+                messageEl.style.color = "#dc3545";
+                messageEl.textContent = "⚠️ กรุณากรอกรหัสสินค้าก่อน";
+                codeInput.focus();
+                return;
+            }
+
+            // 2. Prompt ให้พิมพ์คำยืนยัน
+            // ใช้ setTimeout เล็กน้อยเพื่อให้ UI อัปเดตก่อน popup เด้งขึ้นมา
+            setTimeout(async () => {
+                const confirmText = prompt(`⚠️ คำเตือน: คุณกำลังจะลบสินค้ารหัส "${code}"\n\nหากแน่ใจ ให้พิมพ์คำว่า DELETE (ตัวพิมพ์ใหญ่) เพื่อยืนยัน:`);
+
+                // ถ้ากดยกเลิก หรือพิมพ์ไม่ถูก
+                if (confirmText !== "DELETE") {
+                    messageEl.style.color = "#ff9800"; // สีส้ม
+                    messageEl.textContent = "❌ ยกเลิกการลบ (พิมพ์ไม่ถูกต้อง)";
+                    return;
+                }
+
+                messageEl.style.color = "#666";
+                messageEl.textContent = "⏳ กำลังดำเนินการลบ...";
+
+                try {
+                    // 3. ส่งคำสั่งลบไปยัง Backend
+                    const response = await fetch(`/api/products/${code}`, {
+                        method: "DELETE"
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        messageEl.style.color = "#dc3545";
+                        messageEl.textContent = "❌ " + (data.error || "เกิดข้อผิดพลาดในการลบ");
+                    } else {
+                        messageEl.style.color = "#28a745"; // สีเขียว
+                        messageEl.textContent = "✅ " + data.message;
+                        codeInput.value = ""; // ล้างช่องกรอกเมื่อสำเร็จ
+                    }
+
+                } catch (error) {
+                    messageEl.style.color = "#dc3545";
+                    messageEl.textContent = "❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+                }
+            }, 100);
+        }
+    </script>
+
+</body>
+</html>
